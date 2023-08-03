@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { User } from 'src/app/models/user/user.model';
 import { environment } from 'src/environments/environment';
 
@@ -13,6 +13,8 @@ export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
   private isLoggedInSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   isLoggedIn$: Observable<boolean> = this.isLoggedInSubject.asObservable();
+  private userSubj: BehaviorSubject<User> = new BehaviorSubject<User>({});
+  user$: Observable<User> = this.userSubj.asObservable();
   private isGoogleScriptLoaded = false;
 
   constructor(private http: HttpClient) {
@@ -24,10 +26,12 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
       map(response => {
         if (response && response.token) {
-          // Assuming the backend returns a token upon successful login
+          // Assuming the backend returns a token and user upon successful login
           this.isLoggedInSubject.next(true);
           // Save the token in local storage or a secure cookie for future API requests
           localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          this.userSubj.next(response.user);
           return true;
         } else {
           this.isLoggedInSubject.next(false);
@@ -45,16 +49,24 @@ export class AuthService {
     const url = `${this.apiUrl}/register`;
     return this.http.post<any>(url, user);
   }
-  logout(): void {
-    this.isLoggedInSubject.next(false);
-    // Clear the token from local storage or the secure cookie
-    localStorage.removeItem('token');
+  logout(): Observable<any> {
+    const url = `${this.apiUrl}/logout`;
+    return this.http.post<any>(url, {}).pipe(
+      tap(__ => {
+        this.isLoggedInSubject.next(false);
+        // Clear the token from local storage or the secure cookie
+        localStorage.removeItem('token');
+      })
+    )
   }
 
   isAuthenticated(): boolean {
     return this.isLoggedInSubject.value;
   }
-
+  get user() {
+    console.log('user', this.userSubj.value, 'json user', localStorage.getItem('user'))
+    return Object.keys(this.userSubj.value).length ? this.userSubj.value : JSON.parse(localStorage.getItem('user') || '')
+  }
   async loginWithGoogle(): Promise<void> {
     try {
       if (!this.isGoogleScriptLoaded) {

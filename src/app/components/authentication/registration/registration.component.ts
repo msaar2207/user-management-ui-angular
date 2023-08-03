@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { User } from 'src/app/models/user/user.model';
 import { AuthService } from 'src/app/services/authServices/auth.service';
 
@@ -11,7 +13,12 @@ import { AuthService } from 'src/app/services/authServices/auth.service';
 export class RegistrationComponent implements OnInit {
   registrationForm!: FormGroup;
 
-  constructor(private formBuilder: FormBuilder, private authService: AuthService) { }
+  constructor(private formBuilder: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private snackBar: MatSnackBar
+
+  ) { }
 
   ngOnInit(): void {
     this.initRegistrationForm();
@@ -31,6 +38,8 @@ export class RegistrationComponent implements OnInit {
       this.authService.registerUser(user).subscribe(
         response => {
           // Handle successful registration
+          this.snackBar.open('Login failed. Invalid credentials.', 'Close', { duration: 3000 });
+          this.router.navigate(['/home'])
           console.log('Registration successful:', response);
         },
         error => {

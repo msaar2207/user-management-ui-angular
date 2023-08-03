@@ -1,0 +1,20 @@
+<div class="home-container">
+  <mat-toolbar [color]="'primary'" class="toolbar">
+    <button
+      mat-raised-button
+      color="secondary"
+      class="logout-icon"
+      (click)="logout()"
+    >
+      Logout
+    </button>
+  </mat-toolbar>
+  <div class="content">
+    <h1 class="title">
+      Hi! I am <span class="name">{{ user.name }}</span>
+    </h1>
+
+    <p class="description">I am a <span class="typed"></span>Developer</p>
+  </div>
+  <img class="my-image" src="assets/images/proPic.png" />
+</div>

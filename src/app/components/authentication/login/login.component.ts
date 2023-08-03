@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
         success => {
           if (success) {
             // Redirect to the user-list page on successful login.
-            this.router.navigate(['/users']);
+            this.router.navigate(['/home']);
           } else {
             // Show login failed notification
             this.snackBar.open('Login failed. Invalid credentials.', 'Close', { duration: 3000 });
